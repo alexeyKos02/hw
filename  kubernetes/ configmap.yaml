@@ -1,0 +1,34 @@
+# kubernetes/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logging-config
+data:
+  logging.conf: |
+    [loggers]
+    keys=root
+
+    [handlers]
+    keys=console,file
+
+    [formatters]
+    keys=simple
+
+    [logger_root]
+    level=DEBUG
+    handlers=console,file
+
+    [handler_console]
+    class=StreamHandler
+    level=DEBUG
+    formatter=simple
+    args=(sys.stdout,)
+
+    [handler_file]
+    class=FileHandler
+    level=DEBUG
+    formatter=simple
+    args=('app.log', 'a')
+
+    [formatter_simple]
+    format=%(asctime)s - %(name)s - %(levelname)s - %(message)s

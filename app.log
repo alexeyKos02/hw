@@ -1,0 +1,8 @@
+[2025-03-19 18:01:30,604] WARNING in _internal:  * Debugger is active!
+[2025-03-19 18:01:30,608] INFO in _internal:  * Debugger PIN: 381-060-628
+[2025-03-19 18:07:39,982] INFO in _internal: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2025-03-19 18:07:39,982] INFO in _internal: [33mPress CTRL+C to quit[0m
+[2025-03-19 18:07:39,983] INFO in _internal:  * Restarting with stat
+[2025-03-19 18:07:40,160] WARNING in _internal:  * Debugger is active!
+[2025-03-19 18:07:40,163] INFO in _internal:  * Debugger PIN: 381-060-628

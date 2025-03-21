@@ -1,0 +1,27 @@
+# docker-compose.yml
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=your_db_name
+      - POSTGRES_USER=your_db_user
+      - POSTGRES_PASSWORD=your_db_password
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  app:
+    build: .
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

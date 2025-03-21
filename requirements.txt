@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+Flask-JWT-Extended
+pytest
+grpcio
+grpcio-tools
+protobuf
+alembic
+prometheus-client
+psycopg2-binary
