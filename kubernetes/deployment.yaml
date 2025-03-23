@@ -18,3 +18,14 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
+        env:
+        - name: DB_HOST
+          value: "db"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "your_db_user"
+        - name: DB_PASSWORD
+          value: "your_db_password"
+        - name: DB_NAME
+          value: "your_database"

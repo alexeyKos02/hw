@@ -31,14 +31,19 @@ def create_app():
             }
         },
         'root': {
-            'level': 'DEBUG',  # Установите уровень логирования
+            'level': 'DEBUG',
             'handlers': ['console', 'file']
         }
     })
 
     app = Flask(__name__)
     app.config.from_object(Config)
-    app.config["SWAGGER"] = {"title": "My App", "uiversion": 3}
+    app.config['SWAGGER'] = {
+        'title': 'My App API', 
+        'uiversion': 3,
+        'swagger_ui': True,
+        'doc_expansion': 'none'
+    }
     Swagger(app)
     db.init_app(app)
     jwt.init_app(app)
@@ -46,5 +51,5 @@ def create_app():
     app.register_blueprint(routes)
     
     with app.app_context():
-        db.create_all()  # Создаем таблицы
+        db.create_all()
     return app

@@ -4,11 +4,12 @@ from . import db
 from .models import User, BusinessData
 from flask_jwt_extended import jwt_required, create_access_token
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
+from flasgger import swag_from
 
-LOG_LEVEL = logging.DEBUG  # Или logging.DEBUG для более подробных логов
+LOG_LEVEL = logging.DEBUG
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
-logger = logging.getLogger(__name__)  # Создаем логгер
+logger = logging.getLogger(__name__)
 
 requests_total = Counter('requests_total', 'Total number of requests')
 register_requests = Counter('register_requests', 'Number of register requests')
@@ -50,47 +51,84 @@ def index():
 
 # Регистрация пользователя
 @routes.route('/register', methods=['POST'])
+@swag_from({
+    'summary': 'Регистрация нового пользователя',
+    'description': 'Создает нового пользователя в системе, если имя пользователя не занято.',
+    'parameters': [
+        {
+            'name': 'user',
+            'in': 'body',
+            'description': 'Объект с данными для регистрации нового пользователя',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'username': {
+                        'type': 'string',
+                        'example': 'user123'
+                    },
+                    'password': {
+                        'type': 'string',
+                        'example': 'password123'
+                    }
+                },
+                'required': ['username', 'password']
+            }
+        }
+    ],
+    'responses': {
+        201: {
+            'description': 'Пользователь успешно создан',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'msg': {
+                                'type': 'string',
+                                'example': 'User created successfully'
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        400: {
+            'description': 'Неправильные данные (например, если имя пользователя уже существует)',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'msg': {
+                                'type': 'string',
+                                'example': 'Username already exists'
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        500: {
+            'description': 'Ошибка на сервере',
+            'content': {
+                'application/json': {
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'msg': {
+                                'type': 'string',
+                                'example': 'Internal Server Error'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+})
 def register():
-    """Регистрация пользователя
-    
-    ---
-    post:
-      summary: Регистрация пользователя
-      description: Создает нового пользователя
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-      responses:
-        201:
-          description: Пользователь создан
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-        400:
-          description: Недостаточно данных
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-    """
+
     logger.info("POST /register")
     logger.info(f"Запрос: {request.json}")
     requests_total.inc()
@@ -113,49 +151,68 @@ def register():
         error_counter.inc()
         return jsonify({"msg": "Internal Server Error"}), 500
 
-# Аутентификация
 @routes.route('/login', methods=['POST'])
+@swag_from({
+    'summary': 'Аутентификация пользователя',
+    'description': 'Проверка логина и пароля пользователя. В случае успеха возвращает токен доступа.',
+    'parameters': [
+        {
+            'name': 'user',
+            'in': 'body',
+            'description': 'Объект с данными для аутентификации пользователя',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'username': {
+                        'type': 'string',
+                        'example': 'user123'
+                    },
+                    'password': {
+                        'type': 'string',
+                        'example': 'password123'
+                    }
+                },
+                'required': ['username', 'password']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Токен доступа получен',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'access_token': {
+                        'type': 'string',
+                        'example': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6InVzZXIxMjMifQ.Kxu-N2i1qI_wJf1BbdsW0Yf07v0dHwzLNr_mrBYLMJ4'
+                    }
+                }
+            }
+        },
+        401: {
+            'description': 'Неправильные данные (неверный логин или пароль)',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Bad username or password'
+                    }
+                }
+            }
+        },
+        500: {
+            'description': 'Ошибка на сервере',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Internal Server Error'
+                    }
+                }
+            }
+        }
+    }
+})
 def login():
-    """Аутентификация пользователя
-    
-    ---
-    post:
-      summary: Аутентификация пользователя
-      description: Возвращает токен доступа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-      responses:
-        200:
-          description: Токен доступа получен
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-        401:
-          description: Неправильные данные
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-    """
     logger.info("POST /login")
     logger.info(f"Запрос: {request.json}")
     requests_total.inc()
@@ -174,49 +231,63 @@ def login():
         error_counter.inc()
         return jsonify({"msg": "Internal Server Error"}), 500
 
-# CRUD операции
 @routes.route('/create', methods=['POST'])
 @jwt_required()
+@swag_from({
+    'summary': 'Создание данных',
+    'description': 'Создание новых данных для бизнес-логики. Должен быть передан объект с необходимыми данными.',
+    'parameters': [
+        {
+            'name': 'data',
+            'in': 'body',
+            'description': 'Объект с данными для создания',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'data': {
+                        'type': 'string',
+                        'example': 'Some important business data'
+                    }
+                },
+                'required': ['data']
+            }
+        }
+    ],
+    'responses': {
+        201: {
+            'description': 'Данные успешно созданы',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Data created successfully'
+                    }
+                }
+            }
+        },
+        400: {
+            'description': 'Отсутствуют данные для создания',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Missing data'
+                    }
+                }
+            }
+        },
+        500: {
+            'description': 'Ошибка на сервере',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Internal Server Error'
+                    }
+                }
+            }
+        }
+    }
+})
 def create():
-    """Создание данных
-    
-    ---
-    post:
-      summary: Создание данных
-      description: Создает новые данные
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - data
-              properties:
-                data:
-                  type: string
-      responses:
-        201:
-          description: Данные созданы
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-        400:
-          description: Недостаточно данных
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-    """
     logger.info("POST /create")
     logger.info(f"Запрос: {request.json}")
     requests_total.inc()
@@ -236,26 +307,35 @@ def create():
         return jsonify({"msg": "Internal Server Error"}), 500
 
 @routes.route('/get', methods=['GET'])
+@swag_from({
+    'summary': 'Получение данных',
+    'description': 'Получение списка всех данных из базы данных. Требуется авторизация.',
+    'responses': {
+        200: {
+            'description': 'Токен доступа получен',
+            'schema': {
+                'type': 'array',
+                    'items': {
+        'type': 'string',
+        'example': "1" 
+    }
+
+            }
+        },
+        500: {
+            'description': 'Ошибка на сервере',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Internal Server Error'
+                    }
+                }
+            }
+        }
+    }
+})
 @jwt_required()
 def get():
-    """Получение данных
-    
-    ---
-    get:
-      summary: Получение данных
-      description: Возвращает все данные
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Данные получены
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-    """
     logger.info("GET /get")
     logger.info(f"Запрос: {request}")
     requests_total.inc()
@@ -270,63 +350,82 @@ def get():
         return jsonify({"msg": "Internal Server Error"}), 500
 
 @routes.route('/update/<int:id>', methods=['PUT'])
+@swag_from({
+    'summary': 'Обновление данных',
+    'description': 'Обновление данных для указанного идентификатора. Требуется авторизация.',
+    'parameters': [
+        {
+            'name': 'id',
+            'in': 'path',
+            'description': 'Идентификатор данных, которые нужно обновить',
+            'required': True,
+            'schema': {
+                'type': 'integer',
+                'example': 1
+            }
+        },
+        {
+            'name': 'data',
+            'in': 'body',
+            'description': 'Новые данные для обновления',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'data': {
+                        'type': 'string',
+                        'example': 'Updated business data'
+                    }
+                },
+                'required': ['data']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Данные успешно обновлены',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Data updated successfully'
+                    }
+                }
+            }
+        },
+        400: {
+            'description': 'Отсутствуют новые данные',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Missing data'
+                    }
+                }
+            }
+        },
+        404: {
+            'description': 'Данные с таким идентификатором не найдены',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Data not found'
+                    }
+                }
+            }
+        },
+        500: {
+            'description': 'Ошибка на сервере',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Internal Server Error'
+                    }
+                }
+            }
+        }
+    }
+})
 @jwt_required()
 def update(id):
-    """Обновление данных
-    
-    ---
-    put:
-      summary: Обновление данных
-      description: Обновляет данные по ID
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
-          description: ID данных
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - data
-              properties:
-                data:
-                  type: string
-      responses:
-        200:
-          description: Данные обновлены
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-        400:
-          description: Недостаточно данных
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-        404:
-          description: Данные не найдены
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-    """
     logger.info(f"PUT /update/{id}")
     logger.info(f"Запрос: {request.json}")
     requests_total.inc()
@@ -349,42 +448,55 @@ def update(id):
 
 @routes.route('/delete/<int:id>', methods=['DELETE'])
 @jwt_required()
+@swag_from({
+    'summary': 'Удаление данных',
+    'description': 'Удаление данных с указанным идентификатором. Требуется авторизация.',
+    'parameters': [
+        {
+            'name': 'id',
+            'in': 'path',
+            'description': 'Идентификатор данных, которые нужно удалить',
+            'required': True,
+            'schema': {
+                'type': 'integer',
+                'example': 1
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Данные успешно удалены',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Data deleted successfully'
+                    }
+                }
+            }
+        },
+        404: {
+            'description': 'Данные с таким идентификатором не найдены',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Data not found'
+                    }
+                }
+            }
+        },
+        500: {
+            'description': 'Ошибка на сервере',
+            'content': {
+                'application/json': {
+                    'example': {
+                        'msg': 'Internal Server Error'
+                    }
+                }
+            }
+        }
+    }
+})
 def delete(id):
-    """Удаление данных
-    
-    ---
-    delete:
-      summary: Удаление данных
-      description: Удаляет данные по ID
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
-          description: ID данных
-      responses:
-        200:
-          description: Данные удалены
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-        404:
-          description: Данные не найдены
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  msg:
-                    type: string
-    """
     logger.info(f"DELETE /delete/{id}")
     logger.info(f"Запрос: {request}")
     requests_total.inc()
