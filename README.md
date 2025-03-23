@@ -1,11 +1,5 @@
 
 
-```markdown
-# Инструкция по развертыванию и тестированию проекта
-
-Этот проект использует Kubernetes, Prometheus и Grafana для мониторинга, а также включает Flask-приложение, которое мы тестируем.
-
-## Шаги для развертывания и тестирования
 
 ### 1. Запуск Minikube
 Для начала запустите Minikube, который будет использоваться для локального развертывания Kubernetes:
@@ -13,7 +7,6 @@
 ```bash
 minikube start
 ```
-
 ### 2. Перейдите в каталог `kubernetes`
 Перейдите в каталог, содержащий все Kubernetes-ресурсы для развертывания:
 
@@ -31,7 +24,7 @@ sh install-prom-stack.sh
 Этот скрипт установит весь необходимый стек мониторинга (Prometheus, Grafana и другие необходимые компоненты).
 
 ### 4. Применение Kubernetes-манифестов
-Теперь примените Kubernetes-манифесты для развертывания ваших приложений и ресурсов в кластере:
+Теперь примените Kubernetes-манифесты для развертывания приложений и ресурсов в кластере:
 
 ```bash
 kubectl apply -f kubernetes/
@@ -46,12 +39,14 @@ kubectl apply -f kubernetes/
     kubectl port-forward -n monitoring svc/kube-prom-stack-grafana 3000:80 &
     ```
     Теперь вы можете получить доступ к Grafana на [http://localhost:3000](http://localhost:3000).
+<img width="1724" alt="Screenshot 2025-03-23 at 21 31 38" src="https://github.com/user-attachments/assets/d5bac2e9-60c6-4554-81f3-a5fddeec2236" />
 
 - Откройте порт для доступа к Prometheus:
     ```bash
     kubectl port-forward -n monitoring svc/kube-prom-stack-kube-prome-prometheus 9090:9090 &
     ```
     Теперь вы можете получить доступ к Prometheus на [http://localhost:9090](http://localhost:9090).
+<img width="1727" alt="Screenshot 2025-03-23 at 21 33 54" src="https://github.com/user-attachments/assets/26f55600-2221-4965-8d6d-c1535c66a9a7" />
 
 - Откройте порт для доступа к Flask-приложению:
     ```bash
@@ -77,3 +72,8 @@ Flask-приложение интегрировано с Swagger для авто
 
 http://localhost:5000/apidocs
 <img width="1208" alt="Screenshot 2025-03-23 at 21 21 49" src="https://github.com/user-attachments/assets/55513e89-c89e-4862-aabc-0773ae2c7748" />
+
+
+### 7. Логирование
+
+<img width="1104" alt="Screenshot 2025-03-23 at 21 35 42" src="https://github.com/user-attachments/assets/50f7e4f8-3fa3-484e-b783-c72d1a7811dc" />
