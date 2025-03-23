@@ -3,24 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from .config import Config
 import logging.config
+from flasgger import Swagger
 
 db = SQLAlchemy()
 jwt = JWTManager()
 
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    db.init_app(app)
-    jwt.init_app(app)
-    
-    from .routes import routes
-    app.register_blueprint(routes)
-    
-    with app.app_context():
-        db.create_all()  # Создаем таблицы
-    
-    # Настройка логирования
+
     logging.config.dictConfig({
         'version': 1,
         'formatters': {
@@ -41,9 +31,20 @@ def create_app():
             }
         },
         'root': {
-            'level': 'DEBUG',
+            'level': 'DEBUG',  # Установите уровень логирования
             'handlers': ['console', 'file']
         }
     })
+
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    app.config["SWAGGER"] = {"title": "My App", "uiversion": 3}
+    Swagger(app)
+    db.init_app(app)
+    jwt.init_app(app)
+    from .routes import routes
+    app.register_blueprint(routes)
     
+    with app.app_context():
+        db.create_all()  # Создаем таблицы
     return app

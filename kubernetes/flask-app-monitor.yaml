@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flask-app-monitor
+spec:
+  selector:
+    matchLabels:
+      app: flask-app
+  podMetricsEndpoints:
+  - port: "5000"
+    path: /metrics
+    scheme: http
+    interval: 15s

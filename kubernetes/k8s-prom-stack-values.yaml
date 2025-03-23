@@ -1,0 +1,64 @@
+enabled: true
+kubeControllerManager:
+  enabled: false
+nodeExporter:
+  enabled: false
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false
+    etcd: false
+    configReloaders: false
+    general: false
+    k8s: true
+    kubeApiserver: false
+    kubeApiserverAvailability: false
+    kubeApiserverSlos: false
+    kubelet: true
+    kubeProxy: false
+    kubePrometheusGeneral: false
+    kubePrometheusNodeRecording: false
+    kubernetesApps: false
+    kubernetesResources: false
+    kubernetesStorage: false
+    kubernetesSystem: false
+    kubeScheduler: false
+    kubeStateMetrics: false
+    network: false
+    node: true
+    nodeExporterAlerting: false
+    nodeExporterRecording: true
+    prometheus: false
+    prometheusOperator: false
+  
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+grafana:
+  grafana.ini:
+    auth.anonymous:
+      enabled: true
+  security:
+    admin__user: ""
+    admin__password: ""
+  enabled: true
+  adminPassword: prom-operator
+  defaultDashboardsEnabled: false
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessModes: ["ReadWriteOnce"]
+    size: 5Gi
+alertmanager:
+  enabled: false

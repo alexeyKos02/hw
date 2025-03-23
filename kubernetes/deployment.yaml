@@ -1,4 +1,3 @@
-# kubernetes/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +14,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: your-docker-image-name
+        image: alexpd3/my-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000

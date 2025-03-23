@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flask-app-servicemonitor
+  namespace: default  # Убедитесь, что используете правильное пространство имен
+spec:
+  selector:
+    matchLabels:
+      app: flask-app  # Метка для подбора сервиса, чтобы Prometheus знал, какой сервис мониторить
+  endpoints:
+  - port: metrics           # Ссылка на порт с метками (metrics порт)
+    path: /metrics          # Путь, по которому метрики будут собираться
+    scheme: http            # Протокол для метрик
+    interval: 15s           # Интервал скрапинга
+    targetPort: 5000        # Порт в сервисе, на который направляется запрос
